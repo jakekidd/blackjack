@@ -5,8 +5,10 @@ class Renderer:
     """
     A simple curses-based renderer to display training statistics.
     """
-    def __init__(self):
+    def __init__(self, title: str = None):
         self.screen = None
+        self.title = title
+        self.log_feed = []
 
     def initialize(self):
         """Initializes the curses screen."""
@@ -22,8 +24,6 @@ class Renderer:
         curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
-
-        self.log_feed = []
 
     def cleanup(self):
         """Cleans up the curses environment."""
@@ -53,7 +53,7 @@ class Renderer:
         self.screen.clear()
 
         # Title
-        self.screen.addstr(0, 2, "Blackjack Training Renderer", curses.A_BOLD | curses.color_pair(4))
+        self.screen.addstr(0, 2, "B L A C K   J A C K" if self.title is None else self.title, curses.A_BOLD | curses.color_pair(4))
 
         # Progress Bar
         progress = int((episode / total_episodes) * 50)

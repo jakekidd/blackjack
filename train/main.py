@@ -67,8 +67,12 @@ def main():
     # Generate a session ID
     session_id = gen_session_id()
 
-    # Initialize Renderer
-    renderer = Renderer()
+    # Initialize Renderer.
+    titles = {
+        "tab": "Monte Carlo",
+        "sarsa": "Sarsa"
+    }
+    renderer = Renderer(title=f"{titles[args.agent]} Training")
     renderer.initialize()
 
     try:
