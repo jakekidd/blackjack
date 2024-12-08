@@ -3,7 +3,7 @@ from typing import Tuple, Dict, Any, List, Optional
 from utils.logger import Logger, LogLevel
 
 class Environment:
-    def __init__(self, logger: Logger, multi_round_mode=False, stand_penalty_decay=0.001):
+    def __init__(self, logger: Logger, multi_round_mode=False, stand_penalty_decay=0.000001):
         """
         Initialize the Environment.
 

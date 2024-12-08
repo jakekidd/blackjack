@@ -44,7 +44,7 @@ class SarsaAgent:
             state["usable_ace"],
             state["dealer_card"],
             state["hand_count"],
-            tuple(state.get("deck_composition", []))
+            # tuple(state.get("deck_composition", []))
         )
 
         # Initialize Q-values for this state if it doesn't exist.
@@ -105,8 +105,10 @@ class SarsaAgent:
             "Wins": 0,
             "Losses": 0,
             "Draws": 0,
+            "Win Rate": 0.0,
             "Epsilon": self.epsilon,
         }
+        win_rate_snapshots = []
 
         for episode in range(episodes):
             state = env.reset()  # Reset environment.
@@ -115,7 +117,7 @@ class SarsaAgent:
                 state["usable_ace"],
                 state["dealer_card"],
                 state["hand_count"],
-                tuple(state.get("deck_composition", []))
+                # tuple(state.get("deck_composition", []))
             )
 
             action = self.choose_action(state)  # Choose the first action.
@@ -131,7 +133,7 @@ class SarsaAgent:
                     next_state["usable_ace"],
                     next_state["dealer_card"],
                     next_state["hand_count"],
-                    tuple(next_state.get("deck_composition", []))
+                    # tuple(next_state.get("deck_composition", []))
                 )
 
                 if not done:
@@ -157,6 +159,11 @@ class SarsaAgent:
                 draws += 1
                 stats["Draws"] = draws
 
+            win_rate = wins / (episode + 1)
+            stats["Win Rate"] = win_rate
+            if episode % 100 == 0:
+                win_rate_snapshots.append(win_rate)
+
             stats["Epsilon"] = self.epsilon
             rewards.append(total_reward)
 
@@ -169,7 +176,7 @@ class SarsaAgent:
             )
 
             # Render statistics if renderer is provided.
-            if renderer:
+            if episode % 100 == 0 and renderer:
                 renderer.render(episode + 1, episodes, stats, [])
 
-        return rewards, wins, losses, draws
+        return rewards, wins, losses, draws, { "win_rate": win_rate_snapshots }

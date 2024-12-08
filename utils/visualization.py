@@ -7,6 +7,7 @@ def plot(
     wins: int,
     losses: int,
     draws: int,
+    data: dict,
     rolling_window: int = 100,
     max_points: int = 1000
 ):
@@ -18,6 +19,7 @@ def plot(
         wins (int): Number of games won.
         losses (int): Number of games lost.
         draws (int): Number of games drawn.
+        data (dict): Misc data.
         rolling_window (int): Window size for calculating the rolling average.
         max_points (int): Maximum number of points to display in the rewards graph.
     """
@@ -42,9 +44,15 @@ def plot(
     # Subplot 1: Rewards over episodes
     axes[0].plot(x_axis, rewards, label="Total Reward", alpha=0.3, color='cyan')
     axes[0].plot(rolling_avg_x, rolling_avg, label=f"{rolling_window}-Episode Rolling Average", color='orange', linewidth=2)
-    axes[0].set_title("Rewards per Episode")
+
+    # Add win_rate line if available in data
+    if "win_rate" in data and data["win_rate"]:
+        win_rate_x = np.arange(0, len(data["win_rate"]) * 100, 100)  # Each data point represents every 100 episodes
+        axes[0].plot(win_rate_x, data["win_rate"], label="Win Rate", color='lime', linewidth=2, linestyle='--')
+
+    axes[0].set_title("Rewards and Win Rate per Episode")
     axes[0].set_xlabel("Episode")
-    axes[0].set_ylabel("Reward")
+    axes[0].set_ylabel("Reward / Win Rate")
     axes[0].axhline(0, color='white', linestyle='--', linewidth=1)  # Baseline
     axes[0].legend()
     axes[0].grid(True, alpha=0.3)

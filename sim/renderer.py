@@ -1,5 +1,6 @@
 import curses
 from typing import List
+import time  # Added for tracking timestamps
 
 class Renderer:
     """
@@ -9,6 +10,9 @@ class Renderer:
         self.screen = None
         self.title = title
         self.log_feed = []
+        self.start_time = None  # Tracks the start time of the training session
+        self.last_episode_time = None  # Tracks the last episode's timestamp
+        self.last_episode = 0  # Tracks the last rendered episode
 
     def initialize(self):
         """Initializes the curses screen."""
@@ -24,6 +28,10 @@ class Renderer:
         curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+
+        # Initialize start time when the screen is initialized
+        self.start_time = time.time()
+        self.last_episode_time = self.start_time
 
     def cleanup(self):
         """Cleans up the curses environment."""
@@ -60,9 +68,24 @@ class Renderer:
         progress_bar = "[" + "#" * progress + "-" * (50 - progress) + "]"
         self.screen.addstr(2, 2, f"Progress: {progress_bar} {episode}/{total_episodes}", curses.color_pair(3))
 
+        # Estimated Time Remaining
+        if episode > self.last_episode:
+            current_time = time.time()
+            elapsed_since_last = current_time - self.last_episode_time
+            episodes_since_last = episode - self.last_episode
+            time_per_episode = elapsed_since_last / episodes_since_last
+            remaining_time = (total_episodes - episode) * time_per_episode
+
+            # Update timestamps and episode count
+            self.last_episode_time = current_time
+            self.last_episode = episode
+
+            minutes, seconds = divmod(int(remaining_time), 60)
+            self.screen.addstr(3, 2, f"Estimated Time Remaining: {minutes}m {seconds}s", curses.color_pair(2))
+
         # Statistics
-        self.screen.addstr(4, 2, "Statistics:", curses.A_BOLD | curses.color_pair(2))
-        row = 5
+        self.screen.addstr(5, 2, "Statistics:", curses.A_BOLD | curses.color_pair(2))
+        row = 6
         for key, value in stats.items():
             self.screen.addstr(row, 4, f"{key}: {value}", curses.color_pair(1 if key == "Losses" else 2))
             row += 1

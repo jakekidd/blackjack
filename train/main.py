@@ -3,7 +3,7 @@ import json
 from sim.environment import Environment
 from sim.renderer import Renderer
 from rl.tabular import MonteCarloAgent
-from rl.sarsa import SarsaAgent  # Assuming SarsaAgent is defined here
+from rl.sarsa import SarsaAgent
 from utils.logger import Logger, LogLevel
 from utils.visualization import plot
 from utils.misc import gen_session_id
@@ -87,15 +87,15 @@ def main():
             args.agent,
             logger=logger,
             gamma=0.95,
-            epsilon_decay=0.995,
-            min_epsilon=0.2,
+            epsilon_decay=0.9999,
+            min_epsilon=0.1,
             alpha=0.1,
             epsilon=1.0
         )
 
         # Training
         logger.log(LogLevel.INFO, f"Starting {agent.__class__.__name__} training session: {session_id}")
-        rewards, wins, losses, draws = agent.train(env, episodes=EPISODES, renderer=renderer)
+        rewards, wins, losses, draws, data = agent.train(env, episodes=EPISODES, renderer=renderer)
 
         # Save the Q-table
         output_file = f"data/models/q_table_{session_id}.json"
@@ -104,7 +104,7 @@ def main():
 
         # Visualizations
         logger.log(LogLevel.INFO, "Generating visualizations...")
-        plot(rewards, wins, losses, draws, rolling_window=100, max_points=1000)
+        plot(rewards, wins, losses, draws, data, rolling_window=100, max_points=1000)
         logger.log(LogLevel.INFO, "Visualizations complete.")
 
     except Exception as e:

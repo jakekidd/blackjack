@@ -44,10 +44,10 @@ class MonteCarloAgent:
         dealer_card = state["dealer_card"]
         hand_count = state["hand_count"]
         # Include deck composition only if it exists.
-        deck_composition = tuple(state.get("deck_composition", []))
+        # deck_composition = tuple(state.get("deck_composition", []))
 
         # Update state key to include new inputs.
-        state_key = (player_total, usable_ace, dealer_card, hand_count, deck_composition)
+        state_key = (player_total, usable_ace, dealer_card, hand_count)#, deck_composition)
 
         # Ensure the state exists in the Q-table.
         if state_key not in self.q_table:
@@ -143,7 +143,7 @@ class MonteCarloAgent:
                 # Store the experience in the episode buffer.
                 self.episode.append((
                     (state["player_total"], state["usable_ace"], state["dealer_card"],
-                    state["hand_count"], tuple(state.get("deck_composition", []))),  # State.
+                    state["hand_count"]),#, tuple(state.get("deck_composition", []))),  # State.
                     action,  # Action.
                     reward  # Reward.
                 ))
@@ -182,4 +182,4 @@ class MonteCarloAgent:
             if renderer:
                 renderer.render(episode + 1, episodes, stats, [])
 
-        return rewards, wins, losses, draws
+        return rewards, wins, losses, draws, {}
