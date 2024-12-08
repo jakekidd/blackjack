@@ -11,7 +11,7 @@ class LogLevel(Enum):
     ERROR = "ERROR"
 
 class Logger:
-    def __init__(self, session_id: str, log_dir="data/logs", log_to_console=True, level=LogLevel.INFO):
+    def __init__(self, session_id: str, log_dir="data/logs", log_to_console=True, level=LogLevel.INFO, renderer=None):
         """
         Initialize the Logger instance.
 
@@ -49,6 +49,8 @@ class Logger:
             console_handler.setLevel(self._map_log_level_to_logging_level(level))
             console_handler.setFormatter(self._get_console_formatter())
             self.logger.addHandler(console_handler)
+
+        self.renderer = renderer
 
     def _get_formatter(self):
         """Return the log file formatter."""
@@ -96,6 +98,9 @@ class Logger:
             level (LogLevel): Logging level (DEBUG, INFO, WARNING, ERROR).
             message (str): Message to log.
         """
+        if self.renderer and level != LogLevel.DEBUG:
+            self.renderer.log(message)
+
         if level == LogLevel.DEBUG:
             self.logger.debug(message)
         elif level == LogLevel.INFO:

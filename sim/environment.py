@@ -145,7 +145,13 @@ class Environment:
 
             if dealer_total > 21 or player_total > dealer_total:
                 self.logger.log(LogLevel.INFO, "Player wins.")
-                self.reward += 1.5 if player_total == 21 and len(self.player_hand) == 2 else 1
+                if player_total == 21:
+                    if len(self.player_hand) == 2:
+                        self.reward += 2
+                    else:
+                        self.reward += 1.5
+                else:
+                    self.reward += 1
             elif player_total < dealer_total:
                 self.logger.log(LogLevel.INFO, "Dealer wins.")
                 self.reward -= 1

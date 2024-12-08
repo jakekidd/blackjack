@@ -6,33 +6,33 @@ from utils.logger import Logger, LogLevel
 from utils.visualization import plot
 from utils.misc import gen_session_id
 
-# Generate a session ID
-session_id = gen_session_id()
-
-# Initialize the logger
-logger = Logger(session_id=session_id)
-
-# Initialize the environment and the Monte Carlo agent
-env = Environment(logger=logger, multi_round_mode=True)
-# TODO: command line args ..?
-agent = MonteCarloAgent(
-    logger=logger,
-    gamma=0.95,
-    epsilon_decay=0.995,
-    min_epsilon=0.2
-)
 
 # Configuration
 EPISODES = 100_000      # Number of training episodes
 LOG_INTERVAL = 1_000    # How often to log progress
 
+# Generate a session ID
+session_id = gen_session_id()
+
 # Initialize Renderer
 renderer = Renderer()
 renderer.initialize()
-
 try:
+    # Initialize the logger
+    logger = Logger(session_id=session_id, log_to_console=False, renderer=renderer)
+
+    # Initialize the environment and the Monte Carlo agent
+    env = Environment(logger=logger, multi_round_mode=True)
+    # TODO: command line args ..?
+    agent = MonteCarloAgent(
+        logger=logger,
+        gamma=0.95,
+        epsilon_decay=0.995,
+        min_epsilon=0.2
+    )
+
     # Training
-    logger.log(LogLevel.INFO, f"Starting Monte Carlo training session: {session_id}")
+    logger.log(LogLevel.INFO, f"Starting {agent.__class__.__name__} training session: {session_id}")
     rewards, wins, losses, draws = agent.train(env, episodes=EPISODES, renderer=renderer)
 except Exception as e:
     raise e

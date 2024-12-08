@@ -23,12 +23,22 @@ class Renderer:
         curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
 
+        self.log_feed = []
+
     def cleanup(self):
         """Cleans up the curses environment."""
         curses.nocbreak()
         self.screen.keypad(False)
         curses.echo()
         curses.endwin()
+
+    def log(self, line: str):
+        """Update the log feed to display tail."""
+        if type(line) != type(""):
+            raise TypeError("log line not a str", line)
+        self.log_feed.append(line)
+        if len(self.log_feed) > 5:
+            self.log_feed = self.log_feed[1:]
 
     def render(self, episode: int, total_episodes: int, stats: dict, log_tail: List[str]):
         """
@@ -59,46 +69,9 @@ class Renderer:
 
         # Log Tail
         self.screen.addstr(row + 1, 2, "Log Tail:", curses.A_BOLD | curses.color_pair(4))
+        # TODO: Logs come from outer consumer.
+        log_tail = self.log_feed
         for i, log in enumerate(log_tail[-5:]):  # Display the last 5 logs.
             self.screen.addstr(row + 2 + i, 4, log, curses.color_pair(3))
 
         self.screen.refresh()
-
-# Example usage
-if __name__ == "__main__":
-    import time
-    import random
-
-    renderer = Renderer()
-    try:
-        renderer.initialize()
-
-        total_episodes = 100
-        stats = {
-            "Wins": 0,
-            "Losses": 0,
-            "Draws": 0,
-            "Hits": 0,
-            "Stands": 0,
-        }
-
-        log_tail = []
-
-        for episode in range(1, total_episodes + 1):
-            # Simulate statistics updates
-            stats["Wins"] += random.randint(0, 1)
-            stats["Losses"] += random.randint(0, 1)
-            stats["Draws"] += random.randint(0, 1)
-            stats["Hits"] += random.randint(0, 5)
-            stats["Stands"] += random.randint(0, 5)
-
-            # Simulate log updates
-            log_tail.append(f"Episode {episode}: Random event log.")
-
-            # Render the screen
-            renderer.render(episode, total_episodes, stats, log_tail)
-
-            time.sleep(0.1)
-
-    finally:
-        renderer.cleanup()
