@@ -39,7 +39,8 @@ class Environment:
                 self.logger.log(LogLevel.INFO, "Deck depleted. Resetting for new rounds.")
                 self.deck = self._create_deck()
             else:
-                self.logger.log(LogLevel.WARN, "Deck is empty. Reshuffling.")
+                # The deck should have been reshuffled before this game.
+                self.logger.log(LogLevel.ERROR, "Deck is empty. Reshuffling.")
                 self.deck = self._create_deck()
         card = self.deck.pop()
         self.logger.log(LogLevel.DEBUG, f"Drew card: {card}")
@@ -76,6 +77,10 @@ class Environment:
     def reset(self) -> Dict[str, Any]:
         """Reset the environment for a new episode."""
         self.logger.log(LogLevel.DEBUG, "Resetting the environment for a new game.")
+
+        if not self.multi_round_mode:
+            self.deck = self._create_deck()
+
         self.player_hand = [self._draw_card(), self._draw_card()]
         self.dealer_hand = [self._draw_card(), self._draw_card()]
         self.done = False
@@ -120,23 +125,20 @@ class Environment:
 
         if action == 0:  # Hit
             self.player_hand.append(self._draw_card())
-            player_total, usable_ace = self._hand_value(self.player_hand)
+            player_total, _ = self._hand_value(self.player_hand)
             if player_total > 21:
-                self.logger.log(LogLevel.DEBUG, "Player busts. Game over.")
+                self.logger.log(LogLevel.DEBUG, "Player busts.")
                 self.done = True
                 self.reward = -1
-            else:
-                self.reward = 0
-
         elif action == 1:  # Stand
             player_total, _ = self._hand_value(self.player_hand)
-            if player_total < 13:
-                penalty = self.stand_penalty * (13 - player_total)
-                self.reward -= penalty
-                self.logger.log(LogLevel.INFO, f"Applied stand penalty: {penalty:.2f}.")
-
             self.done = True
             dealer_total, _ = self._hand_value(self.dealer_hand)
+
+            # if player_total < 13:
+            #     penalty = self.stand_penalty * (13 - player_total)
+            #     self.reward -= penalty
+            #     self.logger.log(LogLevel.INFO, f"Applied stand penalty: {penalty:.2f}.")
 
             self.logger.log(LogLevel.DEBUG, "Dealer begins drawing cards.")
             while dealer_total < 17:
@@ -145,18 +147,18 @@ class Environment:
 
             if dealer_total > 21 or player_total > dealer_total:
                 self.logger.log(LogLevel.INFO, "Player wins.")
+                self.reward = 1
                 if player_total == 21:
                     if len(self.player_hand) == 2:
-                        self.reward += 2
-                    else:
-                        self.reward += 1.5
-                else:
-                    self.reward += 1
+                        self.reward = 1.5 #alt: 2
+                #     else:
+                #         self.reward = 1 #alt: 1.5
             elif player_total < dealer_total:
                 self.logger.log(LogLevel.INFO, "Dealer wins.")
-                self.reward -= 1
+                self.reward = -1
             else:
                 self.logger.log(LogLevel.INFO, "It's a draw.")
+                self.reward = 0
 
         # Update state and decay penalty.
         self.stand_penalty *= (1 - self.stand_penalty_decay)

@@ -42,13 +42,26 @@ def plot(
     fig, axes = plt.subplots(2, 1, figsize=(12, 10))
 
     # Subplot 1: Rewards over episodes
-    axes[0].plot(x_axis, rewards, label="Total Reward", alpha=0.3, color='cyan')
+    axes[0].plot(x_axis, rewards, label="Reward per Episode", alpha=0.3, color='cyan')
     axes[0].plot(rolling_avg_x, rolling_avg, label=f"{rolling_window}-Episode Rolling Average", color='orange', linewidth=2)
 
     # Add win_rate line if available in data
-    if "win_rate" in data and data["win_rate"]:
-        win_rate_x = np.arange(0, len(data["win_rate"]) * 100, 100)  # Each data point represents every 100 episodes
-        axes[0].plot(win_rate_x, data["win_rate"], label="Win Rate", color='lime', linewidth=2, linestyle='--')
+    if "snapshots" in data and data["snapshots"]:
+        sample = data["snapshots"][0]
+        # TODO: Should be a constant somewhere:
+        # Each data point represents every 100 episodes.
+        if "Win Rate" in sample:
+            win_rate_y = [s["Win Rate"] for s in data["snapshots"]]
+            win_rate_x = np.arange(0, len(data["snapshots"]) * 100, 100)
+            axes[0].plot(win_rate_x, win_rate_y, label="Win Rate", color='lime', linewidth=2, linestyle='--')
+        if "Epsilon" in sample:
+            win_rate_y = [s["Epsilon"] for s in data["snapshots"]]
+            win_rate_x = np.arange(0, len(data["snapshots"]) * 100, 100)
+            axes[0].plot(win_rate_x, win_rate_y, label="Epsilon", color='cyan', linewidth=2, linestyle='--')
+        # if "Total Rewards" in sample:
+        #     win_rate_y = [s["Total Rewards"] for s in data["snapshots"]]
+        #     win_rate_x = np.arange(0, len(data["snapshots"]) * 100, 100)
+        #     axes[0].plot(win_rate_x, win_rate_y, label="Total Rewards", color='purple', linewidth=2, linestyle='--')
 
     axes[0].set_title("Rewards and Win Rate per Episode")
     axes[0].set_xlabel("Episode")

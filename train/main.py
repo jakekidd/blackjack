@@ -86,11 +86,11 @@ def main():
         agent = initialize_agent(
             args.agent,
             logger=logger,
-            gamma=0.95,
-            epsilon_decay=0.9999,
+            gamma=0.98,
+            epsilon_decay=0.999994,
             min_epsilon=0.1,
             alpha=0.1,
-            epsilon=1.0
+            epsilon=1
         )
 
         # Training
